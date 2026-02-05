@@ -1,0 +1,33 @@
+services:
+  glpi:
+    image: "glpi/glpi:11.0-nightly"
+    restart: "unless-stopped"
+    volumes:
+      # Named volume to avoid permission issues on host
+      - glpi_data:/var/glpi
+      # For GLPI 10.x the marketplace directory note applies; 11.x has its own layout.
+      # If you later want marketplace persistence, you can add:
+      # - ./storage/glpi_marketplace:/var/www/glpi/marketplace/:rw
+    env_file:
+      - .env      # Pass environment variables from .env file
+    depends_on:
+      - db
+    ports:
+      # To follow docs strictly:
+      - "8020:80"
+      # If port 80 is busy, change to e.g. "8080:80" and access on http://localhost:8080
+
+  db:
+    image: "mysql"
+    restart: "unless-stopped"
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_DATABASE: ${GLPI_DB_NAME}
+      MYSQL_USER: ${GLPI_DB_USER}
+      MYSQL_PASSWORD: ${GLPI_DB_PASSWORD}
+
+volumes:
+  glpi_data:
+  db_data:
